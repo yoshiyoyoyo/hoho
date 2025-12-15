@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北海道雪國之旅 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f0f4f8; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 內建圖示元件 (移除外部依賴以確保穩定性) ---
+        const IconBase = ({ children, className }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Plane = (props) => (
+            <IconBase {...props}>
+                <path d="M2 12h20"/><path d="M13 2l9 10-9 10"/><path d="M2 12l5-5m0 10l-5-5"/>
+            </IconBase>
+        ); // 使用簡化的飛機圖示或箭頭替代，這裡使用類似紙飛機/飛行概念
+
+        const MapPin = (props) => (
+            <IconBase {...props}>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </IconBase>
+        );
+
+        const BedDouble = (props) => (
+            <IconBase {...props}>
+                <path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/>
+            </IconBase>
+        );
+
+        const Snowflake = (props) => (
+            <IconBase {...props}>
+                <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/><path d="M20 20l-8-8-8 8"/><path d="M4 4l8 8 8-8"/>
+            </IconBase>
+        );
+
+        const Calendar = (props) => (
+            <IconBase {...props}>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </IconBase>
+        );
+
+        const Users = (props) => (
+            <IconBase {...props}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </IconBase>
+        );
+
+        const Coffee = (props) => (
+            <IconBase {...props}>
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+            </IconBase>
+        );
+
+        const DollarSign = (props) => (
+            <IconBase {...props}>
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </IconBase>
+        );
+
+        // 資料整合
+        const itineraryData = [
+            {
+                date: "2025-12-21",
+                dayStr: "Day 1",
+                weekday: "週日",
+                title: "出發！前往東京",
+                events: [
+                    {
+                        time: "12:10",
+                        endTime: "16:00",
+                        type: "transport",
+                        title: "Yo 獨飛 - 台北到東京",
+                        location: "TPE 桃園機場 -> NRT 成田機場",
+                        members: ["Yo"],
+                        cost: "TWD 13,183",
+                        note: "提早出發",
+                        imagePrompt: "airplane window view clouds blue sky"
+                    },
+                    {
+                        time: "13:15",
+                        endTime: "17:30",
+                        type: "transport",
+                        title: "三人行 - 台北到東京",
+                        location: "TPE 桃園機場 -> NRT 成田機場 (第二航廈)",
+                        members: ["一針", "威寶", "紅燒魚"],
+                        cost: "TWD 43,280 (總計)",
+                        note: "抵達後與 Yo 會合",
+                        imagePrompt: "narita airport arrival hall busy japan"
+                    },
+                    {
+                        time: "19:00",
+                        type: "food",
+                        title: "東京晚餐 & 自由活動",
+                        location: "東京市區",
+                        members: ["全員"],
+                        note: "享受東京的夜晚",
+                        imagePrompt: "tokyo shinjuku night street neon lights rain"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-22",
+                dayStr: "Day 2",
+                weekday: "週一",
+                title: "前進北國",
+                events: [
+                    {
+                        time: "10:00",
+                        type: "sightseeing",
+                        title: "東京市區探索",
+                        location: "東京",
+                        members: ["全員"],
+                        note: "把握搭機前的時間",
+                        imagePrompt: "tokyo tower daytime cityscape"
+                    },
+                    {
+                        time: "16:55",
+                        endTime: "18:35",
+                        type: "transport",
+                        title: "林家人 - 東京到札幌",
+                        location: "HND 羽田機場 -> CTS 新千歲機場",
+                        members: ["Yo", "一針", "威寶", "紅燒魚"],
+                        note: "正式進入北海道！",
+                        imagePrompt: "hokkaido chitose airport winter snow landing"
+                    },
+                    {
+                        time: "20:00",
+                        type: "stay",
+                        title: "札幌第一晚住宿",
+                        location: "26-4-10 Minami 6-jo nishi, Chuo-ku, Sapporo",
+                        members: ["Chris", "Yo", "一針", "威寶", "紅燒魚"],
+                        cost: "TWD 6,806",
+                        note: "休息準備明天的行程",
+                        imagePrompt: "cozy hotel room japan winter night sapporo"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-23",
+                dayStr: "Day 3",
+                weekday: "週二",
+                title: "美瑛夢幻藍",
+                events: [
+                    {
+                        time: "09:00",
+                        type: "transport",
+                        title: "租車自駕出發",
+                        location: "札幌 -> 美瑛",
+                        members: ["全員"],
+                        note: "雪地駕駛請小心",
+                        imagePrompt: "driving in hokkaido snow road winter forest"
+                    },
+                    {
+                        time: "13:00",
+                        type: "sightseeing",
+                        title: "白金青池",
+                        location: "Shirogane Blue Pond, Biei",
+                        members: ["Chris", "Yo", "一針", "威寶", "紅燒魚"],
+                        note: "絕美雪景青池",
+                        imagePrompt: "shirogane blue pond hokkaido winter snow frozen trees magical"
+                    },
+                    {
+                        time: "18:00",
+                        type: "stay",
+                        title: "旭川住宿 (Ueda Mansion)",
+                        location: "旭川市",
+                        members: ["Chris", "Yo", "一針", "威寶", "紅燒魚"],
+                        cost: "TWD 4,696",
+                        note: "旭川過夜",
+                        imagePrompt: "asahikawa city winter street night snow"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-24",
+                dayStr: "Day 4",
+                weekday: "週三",
+                title: "旭川周邊探索",
+                events: [
+                    {
+                        time: "Whole Day",
+                        type: "sightseeing",
+                        title: "旭川/富良野 自由探索",
+                        location: "旭川/富良野區域",
+                        members: ["全員"],
+                        note: "建議行程：旭山動物園看企鵝散步，或前往富良野",
+                        imagePrompt: "asahiyama zoo penguins walking snow winter"
+                    },
+                    {
+                        time: "19:00",
+                        type: "food",
+                        title: "平安夜大餐",
+                        location: "旭川市區",
+                        members: ["全員"],
+                        note: "找間好吃的成吉思汗烤肉吧！",
+                        imagePrompt: "jingisukan hokkaido bbq food delicious"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-25",
+                dayStr: "Day 5",
+                weekday: "週四",
+                title: "聖誕節快樂",
+                events: [
+                    {
+                        time: "Whole Day",
+                        type: "sightseeing",
+                        title: "移動日 / 聖誕行程",
+                        location: "往小樽或二世谷方向移動",
+                        members: ["全員"],
+                        note: "Christmas in Snow!",
+                        imagePrompt: "otaru canal winter snow night lights christmas"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-26",
+                dayStr: "Day 6",
+                weekday: "週五",
+                title: "前往滑雪勝地",
+                events: [
+                    {
+                        time: "15:00",
+                        type: "stay",
+                        title: "滑雪場住宿 Check-in",
+                        location: "701-11 Yunosato, Rankoshi-cho, Hokkaido",
+                        members: ["Chris", "Yo", "一針", "威寶", "紅燒魚"],
+                        cost: "TWD 7,458",
+                        note: "入住兩晚",
+                        imagePrompt: "niseko snowy cottage winter cozy exterior"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-27",
+                dayStr: "Day 7",
+                weekday: "週六",
+                title: "二世谷滑雪",
+                events: [
+                    {
+                        time: "09:45",
+                        type: "activity",
+                        title: "Chris 滑雪行程",
+                        location: "Niseko Grand Hirafu (1 Nisekohirafu2 Jo)",
+                        members: ["Chris"],
+                        cost: "¥ 24,000",
+                        note: "享受粉雪！",
+                        imagePrompt: "skier jumping powder snow niseko blue sky dynamic"
+                    },
+                    {
+                        time: "10:00",
+                        type: "sightseeing",
+                        title: "自由活動 / 溫泉",
+                        location: "二世谷 / 蘭越町",
+                        members: ["Yo", "一針", "威寶", "紅燒魚"],
+                        note: "不滑雪的人可以泡湯或賞雪",
+                        imagePrompt: "japanese outdoor onsen snow winter relaxing"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-28",
+                dayStr: "Day 8",
+                weekday: "週日",
+                title: "返回札幌",
+                events: [
+                    {
+                        time: "11:00",
+                        type: "transport",
+                        title: "返回札幌市區",
+                        location: "二世谷 -> 札幌",
+                        members: ["全員"],
+                        note: "最後的採購機會",
+                        imagePrompt: "sapporo tanukikoji shopping street winter"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-29",
+                dayStr: "Day 9",
+                weekday: "週一",
+                title: "再見北海道",
+                events: [
+                    {
+                        time: "18:30",
+                        endTime: "20:15",
+                        type: "transport",
+                        title: "三人行 - 札幌到東京",
+                        location: "CTS 新千歲機場 -> HND 羽田機場",
+                        members: ["一針", "威寶", "紅燒魚"],
+                        note: "前往東京轉機/住宿",
+                        imagePrompt: "airplane taking off sunset winter sky"
+                    }
+                ]
+            },
+            {
+                date: "2025-12-30",
+                dayStr: "Day 10",
+                weekday: "週二",
+                title: "返台",
+                events: [
+                    {
+                        time: "09:00",
+                        endTime: "12:05",
+                        type: "transport",
+                        title: "三人行 - 東京到台北",
+                        location: "NRT 成田機場 -> TPE 桃園機場",
+                        members: ["一針", "威寶", "紅燒魚"],
+                        note: "旅程結束，平安回家",
+                        imagePrompt: "taiwan taoyuan airport arrival sign"
+                    }
+                ]
+            }
+        ];
+
+        const IconMap = {
+            transport: Plane,
+            stay: BedDouble,
+            sightseeing: MapPin,
+            activity: Snowflake,
+            food: Coffee
+        };
+
+        const ColorMap = {
+            transport: "bg-blue-100 text-blue-600",
+            stay: "bg-indigo-100 text-indigo-600",
+            sightseeing: "bg-emerald-100 text-emerald-600",
+            activity: "bg-sky-100 text-sky-600",
+            food: "bg-orange-100 text-orange-600"
+        };
+
+        function App() {
+            const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+
+            // 自動生成圖片 URL 的 Helper
+            const getImageUrl = (prompt) => {
+                return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=400&nologo=true`;
+            };
+
+            const currentDay = itineraryData[selectedDayIndex];
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Header Image */}
+                    <div className="relative h-64 w-full overflow-hidden">
+                        <img 
+                            src={getImageUrl("hokkaido winter snow landscape mountains scenic hd")} 
+                            alt="Header" 
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#f0f4f8] via-transparent to-black/30"></div>
+                        <div className="absolute bottom-4 left-4 right-4">
+                            <h1 className="text-3xl font-bold text-slate-800 drop-shadow-sm">北海道雪國之旅 2025</h1>
+                            <div className="flex items-center text-slate-600 mt-1 space-x-2 text-sm">
+                                <span className="bg-white/80 px-2 py-1 rounded-md backdrop-blur-sm shadow-sm flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1" />
+                                    12/21 - 12/30
+                                </span>
+                                <span className="bg-white/80 px-2 py-1 rounded-md backdrop-blur-sm shadow-sm flex items-center">
+                                    <Users className="w-4 h-4 mr-1" />
+                                    Chris, Yo, 一針, 威寶, 紅燒魚
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Day Selector (Sticky) */}
+                    <div className="sticky top-0 z-20 bg-[#f0f4f8]/95 backdrop-blur-md pt-2 pb-2 shadow-sm">
+                        <div className="flex overflow-x-auto hide-scrollbar px-4 space-x-3 py-2">
+                            {itineraryData.map((day, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setSelectedDayIndex(index)}
+                                    className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 ${
+                                        selectedDayIndex === index 
+                                        ? "bg-blue-600 text-white shadow-lg scale-105" 
+                                        : "bg-white text-slate-400 hover:bg-white/80"
+                                    }`}
+                                >
+                                    <span className="text-xs font-medium uppercase">{day.dayStr}</span>
+                                    <span className="text-lg font-bold">{day.date.split('-')[2]}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <div className="px-6 py-2 text-center border-b border-slate-200/60">
+                            <h2 className="text-lg font-bold text-slate-700">
+                                {currentDay.date} <span className="text-sm font-normal text-slate-500">({currentDay.weekday})</span>
+                            </h2>
+                            <p className="text-blue-600 font-medium text-sm">{currentDay.title}</p>
+                        </div>
+                    </div>
+
+                    {/* Timeline Content */}
+                    <div className="max-w-2xl mx-auto px-4 mt-6 space-y-6">
+                        {currentDay.events.map((event, idx) => {
+                            const Icon = IconMap[event.type] || MapPin;
+                            const colorClass = ColorMap[event.type] || "bg-gray-100 text-gray-600";
+                            
+                            return (
+                                <div key={idx} className="relative pl-4 group">
+                                    {/* Timeline Line */}
+                                    {idx !== currentDay.events.length - 1 && (
+                                        <div className="absolute left-[27px] top-12 bottom-[-24px] w-0.5 bg-slate-200 group-hover:bg-blue-200 transition-colors"></div>
+                                    )}
+
+                                    <div className="flex gap-4">
+                                        {/* Icon */}
+                                        <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center shadow-sm z-10 border-2 border-white ${colorClass}`}>
+                                            <Icon className="w-6 h-6" />
+                                        </div>
+
+                                        {/* Card */}
+                                        <div className="flex-grow bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+                                            
+                                            {/* Image Section */}
+                                            <div className="h-32 w-full overflow-hidden relative bg-gray-100">
+                                                <img 
+                                                    src={getImageUrl(event.imagePrompt)} 
+                                                    alt={event.title}
+                                                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                                                    loading="lazy"
+                                                />
+                                                <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-mono">
+                                                    {event.time} {event.endTime && `- ${event.endTime}`}
+                                                </div>
+                                                {event.cost && (
+                                                    <div className="absolute bottom-2 right-2 bg-yellow-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-bold flex items-center">
+                                                        <DollarSign className="w-3 h-3 mr-0.5" />
+                                                        {event.cost}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Content Section */}
+                                            <div className="p-4">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-slate-800 leading-tight mb-1">
+                                                            {event.title}
+                                                        </h3>
+                                                        <div className="flex items-center text-slate-500 text-sm mb-2">
+                                                            <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
+                                                            <span className="line-clamp-1">{event.location}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 border border-slate-100">
+                                                    {event.members && (
+                                                        <div className="flex items-center mb-1 text-slate-500 text-xs uppercase tracking-wide">
+                                                            <Users className="w-3 h-3 mr-1" />
+                                                            <span>人員: {event.members.join(', ')}</span>
+                                                        </div>
+                                                    )}
+                                                    {event.note && (
+                                                        <p className="italic text-slate-700">" {event.note} "</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {currentDay.events.length === 0 && (
+                            <div className="text-center py-12 text-slate-400">
+                                <Snowflake className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                <p>這一天目前沒有特定行程，盡情探索吧！</p>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <footer className="text-center text-slate-400 text-xs py-8 mt-4">
+                        <p>© 2025 Hokkaido Trip Guide</p>
+                        <p className="mt-1">Have a nice trip!</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
